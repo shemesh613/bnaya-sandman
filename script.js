@@ -170,6 +170,7 @@ function renderGallery() {
   }
   galleryGrid.innerHTML = gallery.map((item, i) => `
     <div class="gallery-item">
+      ${item.ai ? '<span class="ai-badge">AI</span>' : ''}
       <img src="${item.src}" alt="${item.name}" />
       <button class="remove" data-i="${i}" title="הסר">✕</button>
     </div>
@@ -196,6 +197,148 @@ setupUploadZone('galleryUpload', 'galleryInput', async files => {
 });
 
 renderGallery();
+
+// ============ AI Art Generator ============
+const palettes = [
+  ['#ff6b9d', '#c44569', '#f8b500', '#ffd93d'],
+  ['#7c5cff', '#4ddbff', '#a855f7', '#ec4899'],
+  ['#00b8a9', '#f8f3d4', '#f6416c', '#ffde7d'],
+  ['#0f3460', '#16213e', '#e94560', '#f5a623'],
+  ['#2d00f7', '#6a00f4', '#8900f2', '#a100f2'],
+  ['#3a86ff', '#8338ec', '#ff006e', '#fb5607'],
+  ['#06ffa5', '#3a86ff', '#8338ec', '#ff006e'],
+  ['#f72585', '#7209b7', '#3a0ca3', '#4361ee'],
+  ['#fb8500', '#ffb703', '#219ebc', '#023047'],
+  ['#cdb4db', '#ffc8dd', '#ffafcc', '#bde0fe']
+];
+
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function generateArt() {
+  const size = 800;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  const palette = pick(palettes);
+  const style = pick(['blobs', 'waves', 'particles', 'rings', 'stripes', 'mesh']);
+
+  const baseGrad = ctx.createLinearGradient(0, 0, size, size);
+  baseGrad.addColorStop(0, palette[0]);
+  baseGrad.addColorStop(1, palette[1]);
+  ctx.fillStyle = baseGrad;
+  ctx.fillRect(0, 0, size, size);
+
+  if (style === 'blobs') {
+    for (let i = 0; i < 8; i++) {
+      const x = rand(0, size), y = rand(0, size);
+      const r = rand(80, 280);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      const color = pick(palette);
+      g.addColorStop(0, color + 'cc');
+      g.addColorStop(1, color + '00');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (style === 'waves') {
+    for (let layer = 0; layer < 5; layer++) {
+      ctx.beginPath();
+      ctx.fillStyle = pick(palette) + 'aa';
+      const yBase = (layer / 5) * size + rand(0, 100);
+      ctx.moveTo(0, size);
+      for (let x = 0; x <= size; x += 20) {
+        const y = yBase + Math.sin(x * rand(0.005, 0.02) + layer) * rand(40, 120);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(size, size);
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else if (style === 'particles') {
+    for (let i = 0; i < 600; i++) {
+      const x = rand(0, size), y = rand(0, size);
+      const r = rand(1, 12);
+      const alpha = Math.floor(rand(120, 255)).toString(16).padStart(2, '0');
+      ctx.fillStyle = pick(palette) + alpha;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (style === 'rings') {
+    const cx = size / 2 + rand(-100, 100);
+    const cy = size / 2 + rand(-100, 100);
+    for (let i = 30; i > 0; i--) {
+      ctx.strokeStyle = pick(palette) + 'dd';
+      ctx.lineWidth = rand(2, 10);
+      ctx.beginPath();
+      ctx.arc(cx, cy, i * rand(15, 22), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  } else if (style === 'stripes') {
+    ctx.save();
+    ctx.translate(size / 2, size / 2);
+    ctx.rotate(rand(0, Math.PI));
+    ctx.translate(-size, -size);
+    const w = rand(20, 60);
+    for (let x = 0; x < size * 2; x += w) {
+      ctx.fillStyle = pick(palette) + 'cc';
+      ctx.fillRect(x, 0, w, size * 2);
+    }
+    ctx.restore();
+  } else if (style === 'mesh') {
+    const cols = 8, rows = 8;
+    const cw = size / cols, ch = size / rows;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const g = ctx.createRadialGradient(
+          c * cw + cw/2, r * ch + ch/2, 0,
+          c * cw + cw/2, r * ch + ch/2, cw
+        );
+        g.addColorStop(0, pick(palette) + 'cc');
+        g.addColorStop(1, pick(palette) + '33');
+        ctx.fillStyle = g;
+        ctx.fillRect(c * cw, r * ch, cw, ch);
+      }
+    }
+  }
+
+  ctx.globalCompositeOperation = 'overlay';
+  for (let i = 0; i < 30; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${rand(0.02, 0.08)})`;
+    ctx.beginPath();
+    ctx.arc(rand(0, size), rand(0, size), rand(50, 200), 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = 'bold 18px Heebo, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('בניה סנדמן · AI', 24, size - 24);
+
+  return canvas.toDataURL('image/jpeg', 0.85);
+}
+
+const generateBtn = document.getElementById('generateBtn');
+generateBtn.addEventListener('click', async () => {
+  generateBtn.classList.add('loading');
+  await new Promise(r => setTimeout(r, 20));
+  try {
+    const src = generateArt();
+    gallery.unshift({ name: `AI Art #${Date.now().toString().slice(-4)}`, src, ai: true });
+    saveList(STORAGE_KEYS.gallery, gallery);
+    renderGallery();
+    document.getElementById('galleryGrid').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (err) {
+    alert('שגיאה ביצירת התמונה: ' + err.message);
+  } finally {
+    generateBtn.classList.remove('loading');
+  }
+});
 
 // ============ Music ============
 const musicList = document.getElementById('musicList');

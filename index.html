@@ -91,7 +91,15 @@
 <section class="section dark" id="gallery">
   <div class="container">
     <h2 class="section-title">גלריית תמונות</h2>
-    <p class="section-sub">העלה תמונות נוספות לגלריה</p>
+    <p class="section-sub">העלה תמונות או צור תמונת AI ייחודית בלחיצה</p>
+
+    <div class="gallery-actions">
+      <button class="btn primary generate-btn" id="generateBtn">
+        <span class="generate-icon">✨</span>
+        <span>צור תמונת AI</span>
+      </button>
+      <span class="gallery-hint">כל לחיצה יוצרת יצירה חדשה וייחודית</span>
+    </div>
 
     <div class="upload-zone" id="galleryUpload">
       <input type="file" id="galleryInput" accept="image/*" multiple hidden />
