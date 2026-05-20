@@ -242,6 +242,17 @@ body::after {
   background: rgba(124, 92, 255, 0.1);
 }
 
+.btn.youtube {
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+  color: #fff;
+  box-shadow: 0 12px 36px -10px rgba(255, 0, 0, 0.5);
+}
+
+.btn.youtube:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 50px -10px rgba(255, 0, 0, 0.65);
+}
+
 /* Profile image */
 .hero-image {
   position: relative;
