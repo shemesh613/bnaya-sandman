@@ -38,11 +38,65 @@ body::before {
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(124, 92, 255, 0.25), transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(77, 219, 255, 0.18), transparent 50%);
+    radial-gradient(ellipse at var(--blob1-x, 20%) var(--blob1-y, 0%), rgba(124, 92, 255, 0.30), transparent 50%),
+    radial-gradient(ellipse at var(--blob2-x, 80%) var(--blob2-y, 100%), rgba(77, 219, 255, 0.22), transparent 50%),
+    radial-gradient(ellipse at var(--blob3-x, 50%) var(--blob3-y, 50%), rgba(255, 107, 157, 0.18), transparent 55%);
   z-index: -1;
   pointer-events: none;
+  animation: blobShift 20s ease-in-out infinite;
 }
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(125deg,
+    rgba(124, 92, 255, 0.08) 0%,
+    rgba(77, 219, 255, 0.06) 25%,
+    rgba(255, 107, 157, 0.07) 50%,
+    rgba(124, 92, 255, 0.06) 75%,
+    rgba(77, 219, 255, 0.08) 100%);
+  background-size: 400% 400%;
+  z-index: -1;
+  pointer-events: none;
+  animation: gradientShift 18s ease infinite;
+  mix-blend-mode: screen;
+}
+
+@keyframes blobShift {
+  0%, 100% {
+    --blob1-x: 20%; --blob1-y: 0%;
+    --blob2-x: 80%; --blob2-y: 100%;
+    --blob3-x: 50%; --blob3-y: 50%;
+  }
+  25% {
+    --blob1-x: 70%; --blob1-y: 30%;
+    --blob2-x: 30%; --blob2-y: 70%;
+    --blob3-x: 80%; --blob3-y: 20%;
+  }
+  50% {
+    --blob1-x: 80%; --blob1-y: 80%;
+    --blob2-x: 20%; --blob2-y: 20%;
+    --blob3-x: 50%; --blob3-y: 90%;
+  }
+  75% {
+    --blob1-x: 30%; --blob1-y: 60%;
+    --blob2-x: 70%; --blob2-y: 30%;
+    --blob3-x: 10%; --blob3-y: 40%;
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@property --blob1-x { syntax: '<percentage>'; inherits: false; initial-value: 20%; }
+@property --blob1-y { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+@property --blob2-x { syntax: '<percentage>'; inherits: false; initial-value: 80%; }
+@property --blob2-y { syntax: '<percentage>'; inherits: false; initial-value: 100%; }
+@property --blob3-x { syntax: '<percentage>'; inherits: false; initial-value: 50%; }
+@property --blob3-y { syntax: '<percentage>'; inherits: false; initial-value: 50%; }
 
 /* Navbar */
 .navbar {
