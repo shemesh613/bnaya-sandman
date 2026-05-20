@@ -125,11 +125,29 @@
     <h2 class="section-title">סרטונים</h2>
     <p class="section-sub">העלה סרטונים וצפה בנגן מובנה</p>
 
-    <div class="upload-zone" id="videoUpload">
+    <div class="video-tabs">
+      <button class="tab-btn active" data-tab="upload">📁 העלה קובץ</button>
+      <button class="tab-btn" data-tab="youtube">▶️ הטמע מיוטיוב</button>
+    </div>
+
+    <div class="upload-zone tab-pane active" id="videoUpload" data-pane="upload">
       <input type="file" id="videoInput" accept="video/*" multiple hidden />
       <div class="upload-icon">🎬</div>
       <div class="upload-text">גרור סרטונים לכאן או לחץ לבחירה</div>
       <div class="upload-sub">MP4, WEBM, MOV</div>
+    </div>
+
+    <div class="youtube-form tab-pane" data-pane="youtube">
+      <div class="youtube-icon">▶️</div>
+      <div class="youtube-title">הדבק קישור יוטיוב</div>
+      <div class="youtube-sub">תומך בקישורים מלאים, קצרים, ושורטס</div>
+      <div class="youtube-input-row">
+        <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
+        <button class="btn primary" id="addYoutubeBtn">הוסף</button>
+      </div>
+      <div class="youtube-examples">
+        דוגמאות: youtube.com/watch?v=... · youtu.be/... · youtube.com/shorts/...
+      </div>
     </div>
 
     <div class="video-grid" id="videoGrid"></div>

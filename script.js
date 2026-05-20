@@ -244,20 +244,63 @@ renderMusic();
 const videoGrid = document.getElementById('videoGrid');
 let videos = loadList(STORAGE_KEYS.videos);
 
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.dataset.pane === tab));
+  });
+});
+
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const patterns = [
+    /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  if (/^[a-zA-Z0-9_-]{11}$/.test(url.trim())) return url.trim();
+  return null;
+}
+
 function renderVideos() {
   if (videos.length === 0) {
-    videoGrid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">עדיין אין סרטונים — העלה את הראשון!</div>';
+    videoGrid.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">עדיין אין סרטונים — העלה קובץ או הדבק קישור יוטיוב!</div>';
     return;
   }
-  videoGrid.innerHTML = videos.map((item, i) => `
-    <div class="video-item">
-      <video controls src="${item.src}"></video>
-      <div class="meta">
-        <div class="name">${item.name}</div>
-        <button class="remove" data-i="${i}" title="הסר">✕</button>
+  videoGrid.innerHTML = videos.map((item, i) => {
+    if (item.type === 'youtube') {
+      return `
+        <div class="video-item">
+          <span class="yt-badge">YouTube</span>
+          <iframe src="https://www.youtube.com/embed/${item.videoId}"
+            title="${item.name}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+          <div class="meta">
+            <div class="name">${item.name}</div>
+            <button class="remove" data-i="${i}" title="הסר">✕</button>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="video-item">
+        <video controls src="${item.src}"></video>
+        <div class="meta">
+          <div class="name">${item.name}</div>
+          <button class="remove" data-i="${i}" title="הסר">✕</button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   videoGrid.querySelectorAll('.remove').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -277,10 +320,34 @@ setupUploadZone('videoUpload', 'videoInput', async files => {
       continue;
     }
     const src = await fileToBase64(file);
-    videos.push({ name: file.name, size: file.size, src });
+    videos.push({ type: 'file', name: file.name, size: file.size, src });
   }
   saveList(STORAGE_KEYS.videos, videos);
   renderVideos();
+});
+
+// YouTube embed
+const ytInput = document.getElementById('youtubeUrl');
+const ytBtn = document.getElementById('addYoutubeBtn');
+
+function addYouTube() {
+  const url = ytInput.value.trim();
+  if (!url) return;
+  const id = extractYouTubeId(url);
+  if (!id) {
+    alert('הקישור לא תקין. הדבק קישור יוטיוב מלא או מקוצר.');
+    return;
+  }
+  videos.push({ type: 'youtube', videoId: id, name: `סרטון יוטיוב (${id})`, url });
+  saveList(STORAGE_KEYS.videos, videos);
+  ytInput.value = '';
+  renderVideos();
+  document.getElementById('videoGrid').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+ytBtn.addEventListener('click', addYouTube);
+ytInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') addYouTube();
 });
 
 renderVideos();
